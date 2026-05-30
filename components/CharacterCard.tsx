@@ -17,7 +17,10 @@ export function CharacterCard({ character }: { character: CharacterConfig }) {
     <aside className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
       {/* 상단: 일러스트 + 이름/설명 */}
       <div className="flex flex-col items-center gap-2 bg-gradient-to-b from-indigo-50 to-purple-50 p-5 dark:from-indigo-950/40 dark:to-purple-950/40">
-        <PersonSilhouette className="h-28 w-28 text-indigo-600 dark:text-indigo-300" />
+        <InitialAvatar
+          initial={character.name.charAt(0)}
+          className="h-28 w-28"
+        />
         <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
           {character.name}
         </h2>
@@ -57,19 +60,22 @@ export function CharacterCard({ character }: { character: CharacterConfig }) {
 }
 
 /**
- * 단순 사람 실루엣 SVG (머리 + 어깨/몸).
- * 본인 캐릭터 이미지가 생기면 next/image로 교체하세요.
+ * 캐릭터 이름의 첫 글자를 보여주는 원형 아바타.
+ * 실제 캐릭터 이미지가 생기면 next/image로 교체하세요.
  */
-function PersonSilhouette({ className }: { className?: string }) {
+function InitialAvatar({
+  initial,
+  className,
+}: {
+  initial: string;
+  className?: string;
+}) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="currentColor"
+    <div
       aria-hidden
-      className={className}
+      className={`flex items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-4xl font-bold text-white shadow-md ring-4 ring-white/60 dark:ring-zinc-800/60 ${className ?? ""}`}
     >
-      <circle cx="12" cy="8" r="4" />
-      <path d="M4 21c0-4.418 3.582-8 8-8s8 3.582 8 8v1H4v-1z" />
-    </svg>
+      {initial}
+    </div>
   );
 }
