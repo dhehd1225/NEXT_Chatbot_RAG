@@ -34,6 +34,8 @@ export function buildSystemPrompt(_config: CharacterConfig = characterConfig): s
 - 최신 시장 트렌드/경쟁사 정보가 필요하면 webSearch 도구를 사용합니다.
 - 사용자 스토리 작성 요청에는 createUserStory 도구를 활용합니다.
 - 기능 우선순위 결정이 필요하면 riceScore 도구로 점수를 계산합니다.
+- 팀원에게 업무를 배분하거나 할 일이 정해지면 addTask 도구로 기획보드에 바로 추가합니다.
+- "완료했어", "진행 중으로 바꿔줘" 등 상태 변경 요청에는 updateTaskStatus 도구를 사용합니다.
 
 ## 금지 규칙
 - 근거 없는 시장 수치를 지어내지 않습니다.

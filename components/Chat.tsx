@@ -1,21 +1,31 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 
 import { CharacterCard } from "@/components/CharacterCard";
 import { MessageList } from "@/components/MessageList";
 import { MessageInput } from "@/components/MessageInput";
+import { TaskBoard } from "@/components/TaskBoard";
 import { characterConfig } from "@/lib/ai/prompts";
 
 export function Chat() {
-  const transport = new DefaultChatTransport({ api: "/api/chat" });
+  const [boardKey, setBoardKey] = useState(0);
+  const prevStatus = useRef<string>("");
 
-  const { messages, sendMessage, status, error, setMessages } = useChat({
-    transport,
-  });
+  const transport = new DefaultChatTransport({ api: "/api/chat" });
+  const { messages, sendMessage, status, error, setMessages } = useChat({ transport });
 
   const isBusy = status === "submitted" || status === "streaming";
+
+  // 응답이 완료될 때마다 보드 새로고침
+  useEffect(() => {
+    if (prevStatus.current !== "ready" && status === "ready") {
+      setBoardKey((k) => k + 1);
+    }
+    prevStatus.current = status;
+  }, [status]);
 
   function handleSend(text: string) {
     sendMessage({ text });
@@ -27,7 +37,7 @@ export function Chat() {
 
   return (
     <div className="mx-auto flex h-full w-full max-w-5xl flex-col gap-4 p-4 md:flex-row md:p-6">
-      <div className="flex flex-col gap-3 md:w-72 md:shrink-0">
+      <div className="flex flex-col gap-3 md:w-72 md:shrink-0 md:overflow-y-auto">
         <CharacterCard character={characterConfig} />
 
         <button
@@ -37,6 +47,8 @@ export function Chat() {
         >
           대화 초기화
         </button>
+
+        <TaskBoard refreshKey={boardKey} />
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col gap-3">

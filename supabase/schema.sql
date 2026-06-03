@@ -75,6 +75,26 @@ as $$
 $$;
 
 
+-- =====================================================================
+-- Tasks 테이블 (PM Bot 기획보드용)
+-- Supabase SQL Editor에서 아래를 추가로 실행하세요.
+-- =====================================================================
+
+create table if not exists public.tasks (
+  id          uuid primary key default gen_random_uuid(),
+  title       text        not null,
+  description text        not null default '',
+  status      text        not null default 'todo'
+                          check (status in ('todo', 'in_progress', 'done')),
+  assignee    text        not null default '',
+  created_at  timestamptz not null default now()
+);
+
+-- anon 키로 읽기 허용 (UI에서 직접 fetch)
+alter table public.tasks enable row level security;
+create policy "tasks_read_all"  on public.tasks for select using (true);
+create policy "tasks_write_all" on public.tasks for all    using (true);
+
 -- 5) (선택) Row Level Security
 --    개인 데모용이라면 RLS off로 두고 service role key로만 접근해도 OK.
 --    공개 서비스라면 반드시 RLS를 켜고 정책을 작성하세요.

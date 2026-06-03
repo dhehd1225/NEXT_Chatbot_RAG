@@ -1,6 +1,7 @@
 import { tool } from "ai";
 import { z } from "zod";
 import { searchWeb } from "@/lib/tavily/search";
+import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 
 export const webSearchTool = tool({
   description:
@@ -53,11 +54,7 @@ export const riceScoreTool = tool({
           name: z.string().describe("기능 이름"),
           reach: z.number().min(1).max(10).describe("영향받는 사용자 수 (1~10 척도)"),
           impact: z.number().min(1).max(10).describe("사용자당 임팩트 (1~10 척도)"),
-          confidence: z
-            .number()
-            .min(10)
-            .max(100)
-            .describe("추정 확신도 % (10~100, 예: 80)"),
+          confidence: z.number().min(10).max(100).describe("추정 확신도 % (10~100)"),
           effort: z.number().min(1).max(10).describe("개발 난이도 (1~10, 낮을수록 쉬움)"),
         }),
       )
@@ -86,8 +83,50 @@ export const riceScoreTool = tool({
   },
 });
 
+export const addTaskTool = tool({
+  description:
+    "기획보드에 태스크를 추가합니다. 대화 중 팀원에게 업무를 배분하거나 할 일을 정리할 때 사용합니다.",
+  inputSchema: z.object({
+    title: z.string().describe("태스크 제목 (예: 로그인 화면 와이어프레임 작성)"),
+    description: z.string().describe("상세 내용 또는 완료 기준"),
+    assignee: z.string().describe("담당자 이름 (예: 개발자, 디자이너, 마케터)").default(""),
+    status: z
+      .enum(["todo", "in_progress", "done"])
+      .describe("초기 상태")
+      .default("todo"),
+  }),
+  execute: async ({ title, description, assignee, status }) => {
+    const supabase = getSupabaseAdminClient();
+    const { error } = await supabase
+      .from("tasks")
+      .insert({ title, description, assignee, status });
+    if (error) return `태스크 추가 실패: ${error.message}`;
+    return `태스크 추가됨: "${title}" → ${assignee || "미배정"} (${status})`;
+  },
+});
+
+export const updateTaskStatusTool = tool({
+  description:
+    "기획보드의 태스크 상태를 변경합니다. '완료했어', '진행 중으로 바꿔줘' 등의 요청에 사용합니다.",
+  inputSchema: z.object({
+    title: z.string().describe("변경할 태스크 제목 (정확하게 입력)"),
+    status: z.enum(["todo", "in_progress", "done"]).describe("새 상태"),
+  }),
+  execute: async ({ title, status }) => {
+    const supabase = getSupabaseAdminClient();
+    const { error } = await supabase
+      .from("tasks")
+      .update({ status })
+      .ilike("title", `%${title}%`);
+    if (error) return `상태 변경 실패: ${error.message}`;
+    return `"${title}" 상태 → ${status}`;
+  },
+});
+
 export const tools = {
   webSearch: webSearchTool,
   createUserStory: createUserStoryTool,
   riceScore: riceScoreTool,
+  addTask: addTaskTool,
+  updateTaskStatus: updateTaskStatusTool,
 };
