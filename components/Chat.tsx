@@ -1,21 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 
 import { CharacterCard } from "@/components/CharacterCard";
 import { MessageList } from "@/components/MessageList";
 import { MessageInput } from "@/components/MessageInput";
-import { IngestPanel } from "@/components/IngestPanel";
-import { SourcePanel } from "@/components/SourcePanel";
 import { characterConfig } from "@/lib/ai/prompts";
-import type { RetrievedChunk } from "@/lib/ai/rag";
 
 export function Chat() {
-  const [sources, setSources] = useState<RetrievedChunk[]>([]);
-  const [lastQuery, setLastQuery] = useState<string | null>(null);
-
   const transport = new DefaultChatTransport({ api: "/api/chat" });
 
   const { messages, sendMessage, status, error, setMessages } = useChat({
@@ -24,28 +17,8 @@ export function Chat() {
 
   const isBusy = status === "submitted" || status === "streaming";
 
-  useEffect(() => {
-    if (status !== "ready" || !lastQuery) return;
-    const query = lastQuery;
-    setLastQuery(null);
-    (async () => {
-      try {
-        const res = await fetch("/api/search", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ query }),
-        });
-        const data = await res.json();
-        setSources(res.ok ? (data.chunks ?? []) : []);
-      } catch {
-        setSources([]);
-      }
-    })();
-  }, [status, lastQuery]);
-
   function handleSend(text: string) {
     sendMessage({ text });
-    setLastQuery(text);
   }
 
   function handleClear() {
@@ -64,9 +37,6 @@ export function Chat() {
         >
           대화 초기화
         </button>
-
-        <IngestPanel />
-        <SourcePanel chunks={sources} />
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col gap-3">
