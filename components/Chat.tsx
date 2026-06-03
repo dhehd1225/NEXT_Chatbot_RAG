@@ -7,6 +7,7 @@ import { DefaultChatTransport } from "ai";
 import { MessageList } from "@/components/MessageList";
 import { MessageInput } from "@/components/MessageInput";
 import { TaskBoard } from "@/components/TaskBoard";
+import { GuidePanel } from "@/components/GuidePanel";
 
 export function Chat() {
   const [boardKey, setBoardKey] = useState(0);
@@ -39,8 +40,9 @@ export function Chat() {
           </div>
         </div>
 
-        {/* 태스크 보드 */}
-        <div className="flex-1 overflow-y-auto px-3 py-3">
+        {/* 스크롤 영역 */}
+        <div className="flex-1 overflow-y-auto px-3 py-3 space-y-3">
+          <GuidePanel />
           <TaskBoard refreshKey={boardKey} />
         </div>
 
