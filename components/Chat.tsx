@@ -8,6 +8,7 @@ import { MessageList } from "@/components/MessageList";
 import { MessageInput } from "@/components/MessageInput";
 import { TaskBoard } from "@/components/TaskBoard";
 import { GuidePanel } from "@/components/GuidePanel";
+import { StartupContextPanel } from "@/components/StartupContextPanel";
 
 export function Chat() {
   const [boardKey, setBoardKey] = useState(0);
@@ -42,6 +43,7 @@ export function Chat() {
 
         {/* 스크롤 영역 */}
         <div className="flex-1 overflow-y-auto px-3 py-3 space-y-3">
+          <StartupContextPanel />
           <GuidePanel />
           <TaskBoard refreshKey={boardKey} />
         </div>
