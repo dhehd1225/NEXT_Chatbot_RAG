@@ -107,5 +107,5 @@ export function buildRagContext(chunks: RetrievedChunk[]): string {
     })
     .join("\n");
 
-  return `# 문서 참고\n문서에 없으면 모른다고 답하라.\n\n${facts}`;
+  return `# 업로드된 제품 문서 (PRD/기획서)\n이 내용을 근거로 제품 관련 질문에 답하라. 문서에 없으면 "문서에 없습니다"라고 답하라.\n\n${facts}`;
 }
