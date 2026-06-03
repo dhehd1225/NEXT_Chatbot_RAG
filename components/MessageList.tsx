@@ -3,16 +3,6 @@
 import { useEffect, useRef } from "react";
 import type { UIMessage } from "ai";
 
-/**
- * 채팅 메시지 목록.
- *
- * - user / assistant 메시지를 좌우로 정렬해 보여준다.
- * - 새 메시지가 들어오면 자동으로 가장 아래로 스크롤한다.
- * - UIMessage는 parts 배열을 가지므로, text part만 합쳐서 렌더한다.
- *
- * 세션 1에서는 text 외 part(tool call, file 등)는 다루지 않는다.
- * 세션 2/3에서 RAG와 web search를 붙이면 그때 새 part 타입이 등장한다.
- */
 export function MessageList({
   messages,
   isStreaming,
@@ -28,18 +18,39 @@ export function MessageList({
 
   if (messages.length === 0) {
     return (
-      <div className="flex h-full items-center justify-center text-sm text-zinc-500 dark:text-zinc-400">
-        아래에서 메시지를 입력해 대화를 시작해보세요.
+      <div className="flex h-full flex-col items-center justify-center gap-4 py-16 text-center">
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-600 text-2xl font-bold text-white shadow-md">
+          P
+        </div>
+        <div>
+          <p className="text-base font-semibold text-slate-700">PM Bot에게 물어보세요</p>
+          <p className="mt-1 text-sm text-slate-400">사용자 스토리 · 우선순위 · 시장 조사 · 태스크 배분</p>
+        </div>
+        <div className="mt-2 grid grid-cols-2 gap-2 text-left">
+          {[
+            "로그인 기능 사용자 스토리 작성해줘",
+            "요즘 AI 챗봇 시장 트렌드 알려줘",
+            "기능 3개 RICE 우선순위 매겨줘",
+            "개발자한테 API 설계 태스크 추가해줘",
+          ].map((hint) => (
+            <div
+              key={hint}
+              className="rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-500 shadow-sm"
+            >
+              {hint}
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      {messages.map((message) => (
-        <MessageBubble key={message.id} message={message} />
+    <div className="flex flex-col gap-5">
+      {messages.map((msg) => (
+        <MessageBubble key={msg.id} message={msg} />
       ))}
-      {isStreaming ? <TypingIndicator /> : null}
+      {isStreaming && <TypingIndicator />}
       <div ref={bottomRef} />
     </div>
   );
@@ -47,24 +58,31 @@ export function MessageList({
 
 function MessageBubble({ message }: { message: UIMessage }) {
   const isUser = message.role === "user";
+
   const text = message.parts
     .filter((p): p is { type: "text"; text: string } => p.type === "text")
     .map((p) => p.text)
     .join("");
 
+  if (!text) return null;
+
+  if (isUser) {
+    return (
+      <div className="flex justify-end">
+        <div className="max-w-[72%] rounded-2xl rounded-tr-sm bg-blue-600 px-4 py-2.5 text-sm leading-relaxed text-white shadow-sm">
+          {text}
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
-      <div
-        className={[
-          "max-w-[85%] whitespace-pre-wrap break-words rounded-2xl px-4 py-2.5 text-sm leading-relaxed shadow-sm",
-          isUser
-            ? "bg-indigo-600 text-white"
-            : "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100",
-        ].join(" ")}
-      >
-        {text || (
-          <span className="italic text-zinc-400">(빈 메시지)</span>
-        )}
+    <div className="flex items-start gap-3">
+      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-xs font-bold text-white shadow-sm">
+        P
+      </div>
+      <div className="max-w-[80%] rounded-2xl rounded-tl-sm bg-white px-4 py-3 text-sm leading-relaxed text-slate-700 shadow-sm ring-1 ring-slate-100 whitespace-pre-wrap">
+        {text}
       </div>
     </div>
   );
@@ -72,12 +90,15 @@ function MessageBubble({ message }: { message: UIMessage }) {
 
 function TypingIndicator() {
   return (
-    <div className="flex justify-start">
-      <div className="rounded-2xl bg-zinc-100 px-4 py-2.5 dark:bg-zinc-800">
+    <div className="flex items-start gap-3">
+      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-xs font-bold text-white shadow-sm">
+        P
+      </div>
+      <div className="rounded-2xl rounded-tl-sm bg-white px-4 py-3 shadow-sm ring-1 ring-slate-100">
         <span className="inline-flex gap-1">
           <Dot delay="0ms" />
-          <Dot delay="150ms" />
-          <Dot delay="300ms" />
+          <Dot delay="160ms" />
+          <Dot delay="320ms" />
         </span>
       </div>
     </div>
@@ -87,7 +108,7 @@ function TypingIndicator() {
 function Dot({ delay }: { delay: string }) {
   return (
     <span
-      className="inline-block h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-500 dark:bg-zinc-400"
+      className="inline-block h-1.5 w-1.5 animate-bounce rounded-full bg-slate-300"
       style={{ animationDelay: delay }}
     />
   );
