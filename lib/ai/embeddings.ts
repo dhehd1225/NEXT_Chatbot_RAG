@@ -1,12 +1,12 @@
-// TODO SESSION 2-2: embed/embedMany로 OpenAI embedding 생성.
 import { embed, embedMany } from "ai";
-import { openai } from "@ai-sdk/openai";
+import { google } from "@ai-sdk/google";
 
-const EMBEDDING_MODEL = "text-embedding-3-small"; // schema.sql vector(1536)과 일치
+// gemini-embedding-001: 3072차원 (schema.sql vector(3072)과 일치)
+const embeddingModel = google.textEmbeddingModel("gemini-embedding-001");
 
 export async function createEmbedding(text: string): Promise<number[]> {
   const { embedding } = await embed({
-    model: openai.embedding(EMBEDDING_MODEL),
+    model: embeddingModel,
     value: text,
   });
   return embedding;
@@ -15,7 +15,7 @@ export async function createEmbedding(text: string): Promise<number[]> {
 export async function createEmbeddings(texts: string[]): Promise<number[][]> {
   if (texts.length === 0) return [];
   const { embeddings } = await embedMany({
-    model: openai.embedding(EMBEDDING_MODEL),
+    model: embeddingModel,
     values: texts,
   });
   return embeddings;

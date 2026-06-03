@@ -40,10 +40,10 @@ export function IngestPanel({ accessCode }: { accessCode: string }) {
     <section className="space-y-2 rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
       <div>
         <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-          자기소개 학습 (RAG)
+          제품 문서 학습 (RAG)
         </h3>
         <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
-          본문을 넣고 저장하면 챗봇이 그 내용을 근거로 답합니다.
+          PRD, 기획서, 로드맵을 붙여넣으면 PM Bot이 참고해서 답합니다.
         </p>
       </div>
 
@@ -51,8 +51,8 @@ export function IngestPanel({ accessCode }: { accessCode: string }) {
         value={text}
         onChange={(e) => setText(e.target.value)}
         rows={5}
-        placeholder="예) 나는 AI와 창업에 관심이 많고, Next.js로 MVP를 만든다..."
-        className="w-full resize-none rounded-lg border border-zinc-300 bg-white px-2.5 py-2 text-sm text-zinc-900 outline-none focus:border-indigo-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+        placeholder="예) 우리 제품은 AI 스터디 매칭 플랫폼으로, 핵심 기능은..."
+        className="w-full resize-none rounded-lg border border-zinc-300 bg-white px-2.5 py-2 text-sm text-zinc-900 outline-none focus:border-blue-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
         disabled={status.kind === "loading"}
       />
 
@@ -60,9 +60,9 @@ export function IngestPanel({ accessCode }: { accessCode: string }) {
         type="button"
         onClick={handleIngest}
         disabled={!canSubmit}
-        className="w-full rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+        className="w-full rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {status.kind === "loading" ? "저장 중..." : "학습시키기"}
+        {status.kind === "loading" ? "저장 중..." : "문서 학습시키기"}
       </button>
 
       {status.kind === "ok" ? (

@@ -1,33 +1,21 @@
-/**
- * 질문 유형 라우터 — Session 3에서 채웁니다.
- *
- * 세 가지 경로:
- *   - "rag"    : "나" 관련 질문 → Supabase RAG context 사용
- *   - "web"    : 최신/시사 질문 → Tavily web search 사용
- *   - "direct" : 일반 지식 / 캐릭터와의 잡담 → 그냥 LLM 호출
- *
- * 단순 키워드 매칭으로 시작하고, 필요하면 나중에 LLM-based classifier로 교체.
- */
-
 export type QuestionType = "rag" | "web" | "direct";
 
-/**
- * TODO SESSION 3-1:
- *   - 아래 정도의 키워드 휴리스틱부터 시작하세요.
- *
- *   const RAG_KEYWORDS = ["내가", "나는", "내 ", "제가", "저는", "내 정보", "내 관심사", "내 프로젝트"];
- *   const WEB_KEYWORDS = ["오늘", "최근", "최신", "뉴스", "트렌드", "현재", "요즘", "지금"];
- *
- *   const q = query.toLowerCase();
- *   if (RAG_KEYWORDS.some(k => query.includes(k))) return "rag";
- *   if (WEB_KEYWORDS.some(k => q.includes(k))) return "web";
- *   return "direct";
- *
- *   더 정교하게 가려면:
- *   - LLM에 짧은 분류 프롬프트로 1회 호출 (비용↑ 정확도↑)
- *   - rag/web 동시 사용 (질문이 둘 다 해당될 때)
- */
+// 업로드된 PRD/기획서에서 검색이 필요한 키워드
+const RAG_KEYWORDS = [
+  "우리 제품", "우리 서비스", "우리 앱", "내 프로젝트", "내가 만드는",
+  "PRD", "기획서", "로드맵에", "지난번에 올린", "업로드한",
+  "내 스타트업", "우리 팀", "우리가 정한",
+];
+
+// 최신 시장/경쟁사 정보가 필요한 키워드
+const WEB_KEYWORDS = [
+  "최신", "최근", "요즘", "트렌드", "뉴스", "현재",
+  "경쟁사", "시장 규모", "시장조사", "벤치마킹",
+  "2024", "2025", "2026", "이번 분기", "올해",
+];
+
 export function classifyQuestion(query: string): QuestionType {
-  void query;
+  if (RAG_KEYWORDS.some((k) => query.includes(k))) return "rag";
+  if (WEB_KEYWORDS.some((k) => query.toLowerCase().includes(k))) return "web";
   return "direct";
 }

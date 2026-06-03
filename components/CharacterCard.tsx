@@ -16,7 +16,7 @@ export function CharacterCard({ character }: { character: CharacterConfig }) {
   return (
     <aside className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
       {/* 상단: 일러스트 + 이름/설명 */}
-      <div className="flex flex-col items-center gap-2 bg-gradient-to-b from-indigo-50 to-purple-50 p-5 dark:from-indigo-950/40 dark:to-purple-950/40">
+      <div className="flex flex-col items-center gap-2 bg-gradient-to-b from-blue-50 to-cyan-50 p-5 dark:from-blue-950/40 dark:to-cyan-950/40">
         <InitialAvatar
           initial={character.name.charAt(0)}
           className="h-28 w-28"
@@ -73,7 +73,7 @@ function InitialAvatar({
   return (
     <div
       aria-hidden
-      className={`flex items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-4xl font-bold text-white shadow-md ring-4 ring-white/60 dark:ring-zinc-800/60 ${className ?? ""}`}
+      className={`flex items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-cyan-600 text-4xl font-bold text-white shadow-md ring-4 ring-white/60 dark:ring-zinc-800/60 ${className ?? ""}`}
     >
       {initial}
     </div>

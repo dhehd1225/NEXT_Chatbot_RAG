@@ -1,7 +1,10 @@
-import { streamText, convertToModelMessages, type UIMessage } from "ai";
+import { streamText, convertToModelMessages, stepCountIs, type UIMessage } from "ai";
 import { chatModel } from "@/lib/ai/model";
 import { buildSystemPrompt } from "@/lib/ai/prompts";
 import { retrieveRelevantChunks, buildRagContext } from "@/lib/ai/rag";
+import { classifyQuestion } from "@/lib/ai/router";
+import { searchWeb, buildWebContext } from "@/lib/tavily/search";
+import { tools } from "@/lib/ai/tools";
 import {
   MAX_INPUT_CHARS,
   MAX_OUTPUT_TOKENS,
@@ -40,13 +43,6 @@ export async function POST(req: Request) {
     );
   }
 
-  if (!process.env.OPENAI_API_KEY) {
-    return Response.json(
-      { error: "OPENAI_API_KEY가 설정되어 있지 않습니다. .env.local 또는 Vercel 환경변수에 키를 추가하세요." },
-      { status: 500 },
-    );
-  }
-
   if (!Array.isArray(messages) || messages.length === 0) {
     return Response.json({ error: "메시지가 비어 있습니다." }, { status: 400 });
   }
@@ -62,31 +58,29 @@ export async function POST(req: Request) {
 
   const trimmedMessages = messages.slice(-MAX_HISTORY_MESSAGES);
 
-  // TODO SESSION 3-4: classifyQuestion(lastText)으로 "rag" | "web" | "direct" 분기.
-  //   import { classifyQuestion } from "@/lib/ai/router";
-  // TODO SESSION 3-4 (web 분기): searchWeb → buildWebContext로 system prompt에 추가.
-  //   import { searchWeb, buildWebContext } from "@/lib/tavily/search";
+  const questionType = classifyQuestion(lastText);
+  console.log("[DEBUG chat] questionType:", questionType, "| lastText:", JSON.stringify(lastText));
+
   let systemPrompt = buildSystemPrompt();
 
-  // TODO SESSION 2-6: 유사 chunk를 검색해 system prompt에 덧붙인다.
-  console.log("[DEBUG chat] lastText:", JSON.stringify(lastText));
-  try {
-    const chunks = await retrieveRelevantChunks(lastText);
-    console.log("[DEBUG chat] retrieved chunks count:", chunks.length);
-    chunks.forEach((c, i) =>
-      console.log(
-        `[DEBUG chat] chunk[${i}] sim=${c.similarity.toFixed(4)} content="${c.content.slice(0, 80)}..."`,
-      ),
-    );
-    const ragContext = buildRagContext(chunks);
-    console.log("[DEBUG chat] ragContext length:", ragContext.length);
-    if (ragContext) {
-      systemPrompt = `${systemPrompt}\n\n${ragContext}`;
+  if (questionType === "rag") {
+    try {
+      const chunks = await retrieveRelevantChunks(lastText);
+      console.log("[DEBUG chat] RAG chunks:", chunks.length);
+      const ragContext = buildRagContext(chunks);
+      if (ragContext) systemPrompt = `${systemPrompt}\n\n${ragContext}`;
+    } catch (err) {
+      console.error("[DEBUG chat] RAG 검색 실패:", err);
     }
-    console.log("[DEBUG chat] final systemPrompt length:", systemPrompt.length);
-    console.log("[DEBUG chat] final systemPrompt:\n", systemPrompt);
-  } catch (err) {
-    console.error("[DEBUG chat] RAG 검색 실패 (RAG 없이 진행):", err);
+  } else if (questionType === "web") {
+    try {
+      const results = await searchWeb(lastText);
+      console.log("[DEBUG chat] Tavily results:", results.length);
+      const webContext = buildWebContext(results);
+      if (webContext) systemPrompt = `${systemPrompt}\n\n${webContext}`;
+    } catch (err) {
+      console.error("[DEBUG chat] 웹 검색 실패:", err);
+    }
   }
 
   try {
@@ -97,6 +91,8 @@ export async function POST(req: Request) {
       messages: modelMessages,
       maxOutputTokens: MAX_OUTPUT_TOKENS,
       temperature: TEMPERATURE,
+      tools,
+      stopWhen: stepCountIs(3),
     });
     return result.toUIMessageStreamResponse();
   } catch (err) {

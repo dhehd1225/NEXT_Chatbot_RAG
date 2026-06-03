@@ -33,8 +33,36 @@ export type WebSearchResult = {
  *   - 비용 방지: max_results는 3~5개로 제한.
  */
 export async function searchWeb(query: string): Promise<WebSearchResult[]> {
-  void query;
-  return [];
+  const apiKey = process.env.TAVILY_API_KEY;
+  if (!apiKey) {
+    console.warn("[searchWeb] TAVILY_API_KEY가 없습니다. 빈 결과 반환.");
+    return [];
+  }
+
+  const res = await fetch("https://api.tavily.com/search", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      api_key: apiKey,
+      query,
+      search_depth: "basic",
+      max_results: 4,
+    }),
+  });
+
+  if (!res.ok) {
+    console.error("[searchWeb] Tavily API 오류:", res.status, await res.text());
+    return [];
+  }
+
+  const data = (await res.json()) as {
+    results?: { title: string; url: string; content: string }[];
+  };
+  return (data.results ?? []).map((r) => ({
+    title: r.title,
+    url: r.url,
+    content: r.content,
+  }));
 }
 
 /**
@@ -45,7 +73,8 @@ export async function searchWeb(query: string): Promise<WebSearchResult[]> {
  */
 export function buildWebContext(results: WebSearchResult[]): string {
   if (results.length === 0) return "";
-  return results
-    .map((r, i) => `[${i + 1}] ${r.title}\n${r.url}\n${r.content}`)
+  const body = results
+    .map((r, i) => `[${i + 1}] ${r.title}\n출처: ${r.url}\n${r.content}`)
     .join("\n\n");
+  return `## 웹 검색 결과\n다음 정보를 바탕으로 답변하고, 출처 URL을 함께 인용해줘.\n\n${body}`;
 }

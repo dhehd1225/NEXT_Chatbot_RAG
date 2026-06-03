@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "NEXT AI MVP — 캐릭터 챗봇",
-  description: "Session 1: 나만의 캐릭터 챗봇 만들고 Vercel에 배포하기",
+  title: "PM Bot — AI 제품 기획 어시스턴트",
+  description: "스타트업 제품 기획을 도와주는 AI PM 어시스턴트. RAG + Tool Calling 탑재.",
 };
 
 export default function RootLayout({
