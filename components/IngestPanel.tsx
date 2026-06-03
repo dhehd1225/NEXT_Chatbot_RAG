@@ -9,7 +9,7 @@ type Status =
   | { kind: "ok" }
   | { kind: "error"; message: string };
 
-export function IngestPanel({ accessCode }: { accessCode: string }) {
+export function IngestPanel() {
   const [text, setText] = useState("");
   const [status, setStatus] = useState<Status>({ kind: "idle" });
 
@@ -22,7 +22,7 @@ export function IngestPanel({ accessCode }: { accessCode: string }) {
       const res = await fetch("/api/ingest", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, accessCode }),
+        body: JSON.stringify({ text }),
       });
       const data = await res.json();
       if (!res.ok) {

@@ -1,9 +1,7 @@
-// TODO SESSION 2-8: retrieveRelevantChunks(query) 호출 후 결과 반환 (SourcePanel 확인용).
 export const runtime = "nodejs";
 
 type SearchBody = {
   query?: string;
-  accessCode?: string;
 };
 
 export async function POST(req: Request) {
@@ -12,14 +10,6 @@ export async function POST(req: Request) {
     body = (await req.json()) as SearchBody;
   } catch {
     return Response.json({ error: "잘못된 요청 형식입니다." }, { status: 400 });
-  }
-
-  const expectedCode = process.env.APP_ACCESS_CODE;
-  if (!expectedCode || body.accessCode !== expectedCode) {
-    return Response.json(
-      { error: "access code가 올바르지 않습니다." },
-      { status: 401 },
-    );
   }
 
   if (!body.query || body.query.trim().length === 0) {
