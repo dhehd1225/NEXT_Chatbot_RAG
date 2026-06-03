@@ -41,21 +41,21 @@ export async function POST(req: Request) {
     );
   }
 
-  const trimmedMessages = messages.slice(-MAX_HISTORY_MESSAGES);
-
   const questionType = classifyQuestion(lastText);
-  console.log("[DEBUG chat] questionType:", questionType, "| lastText:", JSON.stringify(lastText));
+
+  // RAG 사용 시 문서 컨텍스트가 추가되므로 히스토리를 더 짧게 자른다
+  const historyLimit = questionType === "rag" ? 2 : MAX_HISTORY_MESSAGES;
+  const trimmedMessages = messages.slice(-historyLimit);
 
   let systemPrompt = buildSystemPrompt();
 
   if (questionType === "rag") {
     try {
       const chunks = await retrieveRelevantChunks(lastText);
-      console.log("[DEBUG chat] RAG chunks:", chunks.length);
       const ragContext = buildRagContext(chunks);
       if (ragContext) systemPrompt = `${systemPrompt}\n\n${ragContext}`;
     } catch (err) {
-      console.error("[DEBUG chat] RAG 검색 실패:", err);
+      console.error("[chat] RAG 검색 실패:", err);
     }
   } else if (questionType === "web") {
     try {
@@ -64,7 +64,7 @@ export async function POST(req: Request) {
       const webContext = buildWebContext(results);
       if (webContext) systemPrompt = `${systemPrompt}\n\n${webContext}`;
     } catch (err) {
-      console.error("[DEBUG chat] 웹 검색 실패:", err);
+      console.error("[chat] 웹 검색 실패:", err);
     }
   }
 

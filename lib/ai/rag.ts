@@ -55,7 +55,7 @@ export async function ingestDocument(text: string): Promise<void> {
 // TODO SESSION 2-5: 질문 embed → match_documents RPC 호출.
 export async function retrieveRelevantChunks(
   query: string,
-  topK: number = 4,
+  topK: number = 3,
 ): Promise<RetrievedChunk[]> {
   console.log("[DEBUG retrieve] query:", JSON.stringify(query));
   const queryEmbedding = await createEmbedding(query);
@@ -93,16 +93,19 @@ export async function retrieveRelevantChunks(
 }
 
 // TODO SESSION 2-6: 안내문 + 번호 매긴 chunk로 context 조립.
+const MAX_CHUNK_CHARS = 300;
+
 export function buildRagContext(chunks: RetrievedChunk[]): string {
   if (chunks.length === 0) return "";
 
-  const facts = chunks.map((c, i) => `[${i + 1}] ${c.content}`).join("\n\n");
-  return [
-    "# 제품 문서 컨텍스트 (업로드된 PRD/기획서에서 검색됨)",
-    "아래 내용은 사용자가 업로드한 제품 문서에서 추출한 정보다.",
-    "이 정보에 근거해서 제품 기획 관련 질문에 답하라.",
-    "문서에 없는 정보는 지어내지 말고 '문서에 해당 내용이 없습니다'라고 답하라.",
-    "",
-    facts,
-  ].join("\n");
+  const facts = chunks
+    .map((c, i) => {
+      const text = c.content.length > MAX_CHUNK_CHARS
+        ? c.content.slice(0, MAX_CHUNK_CHARS) + "…"
+        : c.content;
+      return `[${i + 1}] ${text}`;
+    })
+    .join("\n");
+
+  return `# 문서 참고\n문서에 없으면 모른다고 답하라.\n\n${facts}`;
 }

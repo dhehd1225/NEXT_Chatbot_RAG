@@ -11,7 +11,8 @@ export const MAX_INPUT_CHARS = 500;
 // 모델이 한 번에 생성할 수 있는 최대 출력 토큰 수.
 // 1 토큰 ≈ 영어 4글자 / 한글 1~2글자.
 // TODO SESSION 1-5 (선택): 캐릭터 답변 길이에 맞춰 조정.
-export const MAX_OUTPUT_TOKENS = 500;
+// 기본 단답 150자 기준 여유 있게 설정 (명시적 산출물 요청 시 더 쓸 수 있게)
+export const MAX_OUTPUT_TOKENS = 600;
 
 // 사용할 모델 이름. 기본은 가장 저렴한 gpt-4o-mini.
 // TODO SESSION 1-6 (선택): 더 똑똑한 답이 필요하면 "gpt-4o"로 (비용 15~20배).
@@ -21,7 +22,8 @@ export const MODEL_NAME = "gpt-4o-mini";
 
 // 대화 히스토리에 포함할 최근 메시지 수.
 // 너무 길면 매 요청마다 토큰을 많이 먹습니다.
-export const MAX_HISTORY_MESSAGES = 20;
+// RAG 사용 시 히스토리가 추가로 붙으므로 기본값은 작게 유지
+export const MAX_HISTORY_MESSAGES = 6;
 
 // 답변의 무작위성(창의성). 0~2 사이.
 //   - 0    : 같은 질문에 거의 항상 같은 답 (사실 조회·코드 생성에 유리)
